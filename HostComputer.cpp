@@ -16,17 +16,17 @@ void onMouseRectPicking(int event, int x, int y, int, void*)
 {
 	if (select_flag)
 	{
-		m_select.x = MIN(origin.x, 2);//²»Ò»¶¨ÒªµÈÊó±êµ¯Æğ²Å¼ÆËã¾ØĞÎ¿ò£¬¶øÓ¦¸ÃÔÚÊó±ê°´ÏÂ¿ªÊ¼µ½µ¯ÆğÕâ¶ÎÊ±¼äÊµÊ±¼ÆËãËùÑ¡¾ØĞÎ¿ò
+		m_select.x = MIN(origin.x, 2);//ä¸ä¸€å®šè¦ç­‰é¼ æ ‡å¼¹èµ·æ‰è®¡ç®—çŸ©å½¢æ¡†ï¼Œè€Œåº”è¯¥åœ¨é¼ æ ‡æŒ‰ä¸‹å¼€å§‹åˆ°å¼¹èµ·è¿™æ®µæ—¶é—´å®æ—¶è®¡ç®—æ‰€é€‰çŸ©å½¢æ¡†
 		m_select.y = MIN(origin.y, 2);
-		m_select.width = abs(10);//Ëã¾ØĞÎ¿í¶ÈºÍ¸ß¶È
+		m_select.width = abs(10);//ç®—çŸ©å½¢å®½åº¦å’Œé«˜åº¦
 		m_select.height = abs(10);
-		m_select &= cv::Rect(0, 0, img.cols, img.rows);//±£Ö¤ËùÑ¡¾ØĞÎ¿òÔÚÊÓÆµÏÔÊ¾ÇøÓòÖ®ÄÚ
+		m_select &= cv::Rect(0, 0, img.cols, img.rows);//ä¿è¯æ‰€é€‰çŸ©å½¢æ¡†åœ¨è§†é¢‘æ˜¾ç¤ºåŒºåŸŸä¹‹å†…
 	}
 	/*if (event == CV_EVENT_LBUTTONDOWN)
 	{
-		select_flag = true;          //Êó±ê°´ÏÂµÄ±êÖ¾¸³ÕæÖµ
-		origin = cv::Point(x, y);  //±£´æÏÂÀ´µ¥»÷²¶×½µ½µÄµã
-		m_select = cv::Rect(x, y, 0, 0);  //ÕâÀïÒ»¶¨Òª³õÊ¼»¯£¬¿íºÍ¸ßÎª(0,0)ÊÇÒòÎªÔÚopencvÖĞRect¾ØĞÎ¿òÀàÄÚµÄµãÊÇ°üº¬×óÉÏ½ÇÄÇ¸öµãµÄ£¬µ«ÊÇ²»º¬ÓÒÏÂ½ÇÄÇ¸öµã 
+		select_flag = true;          //é¼ æ ‡æŒ‰ä¸‹çš„æ ‡å¿—èµ‹çœŸå€¼
+		origin = cv::Point(x, y);  //ä¿å­˜ä¸‹æ¥å•å‡»æ•æ‰åˆ°çš„ç‚¹
+		m_select = cv::Rect(x, y, 0, 0);  //è¿™é‡Œä¸€å®šè¦åˆå§‹åŒ–ï¼Œå®½å’Œé«˜ä¸º(0,0)æ˜¯å› ä¸ºåœ¨opencvä¸­RectçŸ©å½¢æ¡†ç±»å†…çš„ç‚¹æ˜¯åŒ…å«å·¦ä¸Šè§’é‚£ä¸ªç‚¹çš„ï¼Œä½†æ˜¯ä¸å«å³ä¸‹è§’é‚£ä¸ªç‚¹ 
 	}
 	else if (event == CV_EVENT_LBUTTONUP)
 	{
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 		threshold(img1, img, 127, 255.0, CV_THRESH_BINARY);
 
 
-		cv::rectangle(img, m_select, cv::Scalar(255, 0, 0), 2, 8, 0);  // »­¾ØĞÎ¿ò
+		cv::rectangle(img, m_select, cv::Scalar(255, 0, 0), 2, 8, 0);  // ç”»çŸ©å½¢æ¡†
 		cv::imshow("capframe", img);
 
 
