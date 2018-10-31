@@ -3,77 +3,199 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <windows.h>
+#include <string.h>
+#include <conio.h>
+#include <tchar.h>
+#include <stdlib.h>
+
 using namespace cv;
 using namespace std;
 
-cv::Mat img1, img;
-bool select_flag = false;
-cv::Rect m_select;
-cv::Point origin;
-int ROI_count;
 
-void onMouseRectPicking(int event, int x, int y, int, void*)
-{
-	if (select_flag)
-	{
-		m_select.x = MIN(origin.x, 2);//不一定要等鼠标弹起才计算矩形框，而应该在鼠标按下开始到弹起这段时间实时计算所选矩形框
-		m_select.y = MIN(origin.y, 2);
-		m_select.width = abs(10);//算矩形宽度和高度
-		m_select.height = abs(10);
-		m_select &= cv::Rect(0, 0, img.cols, img.rows);//保证所选矩形框在视频显示区域之内
-	}
-	/*if (event == CV_EVENT_LBUTTONDOWN)
-	{
-		select_flag = true;          //鼠标按下的标志赋真值
-		origin = cv::Point(x, y);  //保存下来单击捕捉到的点
-		m_select = cv::Rect(x, y, 0, 0);  //这里一定要初始化，宽和高为(0,0)是因为在opencv中Rect矩形框类内的点是包含左上角那个点的，但是不含右下角那个点 
-	}
-	else if (event == CV_EVENT_LBUTTONUP)
-	{
-		select_flag = false;
-		ROI_count++;
-	}*/
-}
 
-int main(int argc, char* argv[])
+int main(void)
 {
 
-	img1 = imread("DSC_0966.JPG", 0);
-	img = img1.clone();
-	threshold(img1, img, 127, 255.0, CV_THRESH_BINARY);
+	HANDLE hCom;//全局变量，串口句柄
+	hCom = CreateFile(_T("COM5"),//COM1口
+		GENERIC_READ | GENERIC_WRITE,//允许读和写
+		0,//独占方式
+		NULL,
+		OPEN_EXISTING,//打开而不是创建
+		0,//同步方式
+		//FILE_ATTRIBUTE_NORMAL|FILE_FLAG_OVERAPPLE,//重叠方式
+		NULL);
+	if (hCom == (HANDLE)-1)
+	{
+		printf("打开COM失败！");
+		return 0;
+	}
+	SetupComm(hCom, 20480, 20480);//输入缓冲区和输出缓冲区的大小都是20480
+	COMMTIMEOUTS TimeOuts;
+	//设定读超时
+	TimeOuts.ReadIntervalTimeout = 1000;
+	TimeOuts.ReadTotalTimeoutMultiplier = 500;
+	TimeOuts.ReadTotalTimeoutConstant = 5000;
+	//设定写超时
+	TimeOuts.WriteTotalTimeoutMultiplier = 500;
+	TimeOuts.WriteTotalTimeoutConstant = 2000;
+	SetCommTimeouts(hCom, &TimeOuts);//设置超时
+	DCB dcb;
+	GetCommState(hCom, &dcb);
+	dcb.BaudRate = 115200;//波特率为115200
+	dcb.ByteSize = 8;//每个字节有8位
+	dcb.Parity = NOPARITY;//无奇偶校验位
+	dcb.StopBits = TWOSTOPBITS;//两个停止位
+	dcb.fParity = FALSE;
+	dcb.fNull = FALSE;
+	SetCommState(hCom, &dcb);
+	PurgeComm(hCom, PURGE_TXCLEAR | PURGE_RXCLEAR);//在读写串口之前清空缓冲区
+	short int MessageLen = 20;//数据头：数据长度，不包括数据头和校验位
+	unsigned char result[1] = { 5 };//写入串口缓存区的数组
+	DWORD dwwrittenLen = 0;
+
+
+	//配置摄像头
+	VideoCapture capture(1);//打开摄像头  
+	if (!capture.isOpened())//没有打开摄像头的话，就返回。
+		return 0;
+	Mat edges, edges1; //定义一个Mat变量，用于存储每一帧的图像
+//【2】循环显示每一帧  
+	cv::Rect m_select;
+
+	m_select.width = abs(130);//算矩形宽度和高度
+	m_select.height = abs(70);
+	//m_select &= cv::Rect(0, 0, img.cols, img.rows);//保证所选矩形框在视频显示区域之内
 	bool stop = false;
-
-	cv::namedWindow("capframe", CV_WINDOW_AUTOSIZE);
-	cv::setMouseCallback("capframe", onMouseRectPicking, 0);
-
-	char pic_name[40];
-	ROI_count = 0;
-
+	long sum = 0, avr = 0;
+	int r, c;
 	while (!stop)
 	{
-		img1 = imread("DSC_0966.JPG", 0);
-		img = img1.clone();
-		threshold(img1, img, 127, 255.0, CV_THRESH_BINARY);
-
-
-		cv::rectangle(img, m_select, cv::Scalar(255, 0, 0), 2, 8, 0);  // 画矩形框
-		cv::imshow("capframe", img);
-
-
-
-		if ((m_select.x != 0) && (m_select.y != 0) && (m_select.width != 0) && (m_select.height != 0))
+		Mat frame; //定义一个Mat变量，用于存储每一帧的图像  
+		capture >> frame;  //读取当前帧                          
+		if (frame.empty())
 		{
-			sprintf_s(pic_name, "ROI_%d.jpg", ROI_count);
-			Mat ROI = img(m_select);
-			imshow("ROI_WIN", ROI);
-			imwrite(pic_name, ROI);
+			break;
+		}
+		else
+		{
+			/*result[0] = { 5 };
+			WriteFile(hCom, result, 24, &dwwrittenLen, NULL);*/
+			
+			// col 4:
+			m_select.x = 165;//不一定要等鼠标弹起才计算矩形框，而应该在鼠标按下开始到弹起这段时间实时计算所选矩形框
+			m_select.y = 50;
+			cvtColor(frame, edges, CV_BGR2GRAY);//彩色转换成灰度
+			threshold(edges, edges, 150, 255.0, CV_THRESH_BINARY);
+
+			cv::rectangle(edges, m_select, cv::Scalar(255, 128, 128), 2, 8, 0);  // 画矩形框
+			imshow("Video", edges); //显示当前帧
+			for (r = 50; r < 120; r++)
+			{
+				for (c = 165; c < 295; c++)
+				{
+					sum += edges.at<uchar>(r, c);
+				}
+			}
+			avr = sum / 9100;
+			if (avr < 100)
+			{
+			result[0] = { 5 };
+			WriteFile(hCom, result, 24, &dwwrittenLen, NULL);
+
+			}
+			avr = 0;
+			sum = 0;
+
+
+
+
+			//col 3:
+
+			m_select.x = 165;//不一定要等鼠标弹起才计算矩形框，而应该在鼠标按下开始到弹起这段时间实时计算所选矩形框
+			m_select.y = 140;
+			cv::rectangle(edges, m_select, cv::Scalar(255, 128, 128), 2, 8, 0);  // 画矩形框
+			imshow("Video", edges); //显示当前帧
+			for (r = 140; r < 210; r++)
+			{
+				for (c = 165; c < 295; c++)
+				{
+					sum += edges.at<uchar>(r, c);
+				}
+			}
+			avr = sum / 9100;
+			if (avr < 100)
+			{
+				result[0] = { 4 };
+				WriteFile(hCom, result, 24, &dwwrittenLen, NULL);
+
+			}
+				avr = 0;
+				sum = 0;
+			//col 2:
+
+			m_select.x = 165;//不一定要等鼠标弹起才计算矩形框，而应该在鼠标按下开始到弹起这段时间实时计算所选矩形框
+			m_select.y = 230;
+			cv::rectangle(edges, m_select, cv::Scalar(255, 128, 128), 2, 8, 0);  // 画矩形框
+			imshow("Video", edges); //显示当前帧
+			for (r = 230; r < 300; r++)
+			{
+				for (c = 165; c < 295; c++)
+				{
+					sum += edges.at<uchar>(r, c);
+				}
+			}
+			avr = sum / 9100;
+			printf("%d\n",avr);
+			if(avr < 100)
+			{
+				result[0] = { 3 };
+				WriteFile(hCom, result, 24, &dwwrittenLen, NULL);
+
+			}
+				avr = 0;
+				sum = 0;
+			//col 1:
+
+			m_select.x = 165;//不一定要等鼠标弹起才计算矩形框，而应该在鼠标按下开始到弹起这段时间实时计算所选矩形框
+			m_select.y = 320;
+			cv::rectangle(edges, m_select, cv::Scalar(255, 128, 128), 2, 8, 0);  // 画矩形框
+			imshow("Video", edges); //显示当前帧
+			for (r = 320; r < 390; r++)
+			{
+				for (c = 165; c < 295; c++)
+				{
+					sum += edges.at<uchar>(r, c);
+				}
+			}
+			avr = sum / 9100;
+			if(avr < 100)
+			{
+				result[0] = { 2 };
+				WriteFile(hCom, result, 24, &dwwrittenLen, NULL);
+
+			}
+			avr = 0;
+			sum = 0;
+		}
+		
+			waitKey(30); //延时30ms  
 		}
 
 
-		char key = cv::waitKey(30);
-		if (key == 27)
-			stop = true;
+
+
+		// result[0] = { 5 };
+		 //WriteFile(hCom, result, 24, &dwwrittenLen, NULL);
+		 //printf("Main Baseline往串口发送数据成功\n");
+
+
+
+
+
+		CloseHandle(hCom);
+
 	}
-	waitKey(0);
-	return 0;
-}
