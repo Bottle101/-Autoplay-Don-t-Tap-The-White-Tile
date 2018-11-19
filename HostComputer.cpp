@@ -20,7 +20,7 @@ int main(void)
 {
 
 	HANDLE hCom;//全局变量，串口句柄
-	hCom = CreateFile(_T("COM5"),//COM1口
+	hCom = CreateFile(_T("COM3"),//COM3口
 		GENERIC_READ | GENERIC_WRITE,//允许读和写
 		0,//独占方式
 		NULL,
