@@ -74,8 +74,7 @@ int main(void)
 	int r, c;
 	while (!stop)
 	{
-		Mat frame; //定义一个Mat变量，用于存储每一帧的图像  
-		capture >> frame;  //读取当前帧                          
+		                        
 		if (frame.empty())
 		{
 			break;
@@ -84,12 +83,15 @@ int main(void)
 		{
 			/*result[0] = { 5 };
 			WriteFile(hCom, result, 24, &dwwrittenLen, NULL);*/
-			
+			Mat frame; //定义一个Mat变量，用于存储每一帧的图像  
+		        
 			// col 4:
-			m_select.x = 165;//不一定要等鼠标弹起才计算矩形框，而应该在鼠标按下开始到弹起这段时间实时计算所选矩形框
-			m_select.y = 50;
+			capture >> frame;  //读取当前帧  
 			cvtColor(frame, edges, CV_BGR2GRAY);//彩色转换成灰度
 			threshold(edges, edges, 150, 255.0, CV_THRESH_BINARY);
+			m_select.x = 165;//不一定要等鼠标弹起才计算矩形框，而应该在鼠标按下开始到弹起这段时间实时计算所选矩形框
+			m_select.y = 50;
+			
 
 			cv::rectangle(edges, m_select, cv::Scalar(255, 128, 128), 2, 8, 0);  // 画矩形框
 			imshow("Video", edges); //显示当前帧
@@ -101,11 +103,11 @@ int main(void)
 				}
 			}
 			avr = sum / 9100;
-			if (avr < 100)
+			if (avr < 50)
 			{
 			result[0] = { 5 };
 			WriteFile(hCom, result, 24, &dwwrittenLen, NULL);
-
+                        waitKey(100);
 			}
 			avr = 0;
 			sum = 0;
@@ -114,7 +116,9 @@ int main(void)
 
 
 			//col 3:
-
+                        capture >> frame;  //读取当前帧  
+			cvtColor(frame, edges, CV_BGR2GRAY);//彩色转换成灰度
+			threshold(edges, edges, 150, 255.0, CV_THRESH_BINARY);
 			m_select.x = 165;//不一定要等鼠标弹起才计算矩形框，而应该在鼠标按下开始到弹起这段时间实时计算所选矩形框
 			m_select.y = 140;
 			cv::rectangle(edges, m_select, cv::Scalar(255, 128, 128), 2, 8, 0);  // 画矩形框
@@ -127,7 +131,7 @@ int main(void)
 				}
 			}
 			avr = sum / 9100;
-			if (avr < 100)
+			if (avr < 50)
 			{
 				result[0] = { 4 };
 				WriteFile(hCom, result, 24, &dwwrittenLen, NULL);
@@ -136,7 +140,9 @@ int main(void)
 				avr = 0;
 				sum = 0;
 			//col 2:
-
+                        capture >> frame;  //读取当前帧  
+			cvtColor(frame, edges, CV_BGR2GRAY);//彩色转换成灰度
+			threshold(edges, edges, 150, 255.0, CV_THRESH_BINARY);
 			m_select.x = 165;//不一定要等鼠标弹起才计算矩形框，而应该在鼠标按下开始到弹起这段时间实时计算所选矩形框
 			m_select.y = 230;
 			cv::rectangle(edges, m_select, cv::Scalar(255, 128, 128), 2, 8, 0);  // 画矩形框
@@ -150,16 +156,18 @@ int main(void)
 			}
 			avr = sum / 9100;
 			printf("%d\n",avr);
-			if(avr < 100)
+			if(avr < 50)
 			{
 				result[0] = { 3 };
 				WriteFile(hCom, result, 24, &dwwrittenLen, NULL);
-
+                                waitKey(100);
 			}
 				avr = 0;
 				sum = 0;
 			//col 1:
-
+                        capture >> frame;  //读取当前帧  
+			cvtColor(frame, edges, CV_BGR2GRAY);//彩色转换成灰度
+			threshold(edges, edges, 150, 255.0, CV_THRESH_BINARY);
 			m_select.x = 165;//不一定要等鼠标弹起才计算矩形框，而应该在鼠标按下开始到弹起这段时间实时计算所选矩形框
 			m_select.y = 320;
 			cv::rectangle(edges, m_select, cv::Scalar(255, 128, 128), 2, 8, 0);  // 画矩形框
@@ -172,17 +180,17 @@ int main(void)
 				}
 			}
 			avr = sum / 9100;
-			if(avr < 100)
+			if(avr < 50)
 			{
 				result[0] = { 2 };
 				WriteFile(hCom, result, 24, &dwwrittenLen, NULL);
-
+                                waitKey(100);
 			}
 			avr = 0;
 			sum = 0;
 		}
 		
-			waitKey(30); //延时30ms  
+			waitKey(10); //延时30ms  
 		}
 
 
